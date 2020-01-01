@@ -5,6 +5,8 @@ import os
 import glob
 import skimage.io as io
 import skimage.transform as trans
+import cv2
+from skimage import color
 
 Sky = [128,128,128]
 Building = [128,0,0]
@@ -39,8 +41,8 @@ def adjustData(img,mask,flag_multi_class,num_class):
     elif(np.max(img) > 1):
         img = img / 255
         mask = mask /255
-        mask[mask > 0.5] = 1
-        mask[mask <= 0.5] = 0
+        mask[mask > 0.05] = 1
+        mask[mask <= 0.05] = 0
     return (img,mask)
 
 
@@ -117,8 +119,26 @@ def labelVisualize(num_class,color_dict,img):
     return img_out / 255
 
 
+def labelVisualize1(num_class, img, color_dict = COLOR_DICT):
+    img = img[:,:,0] if len(img.shape) == 3 else img
+    img_out = np.zeros(img.shape + (3,))
+    for i in range(num_class):
+        img_out[img == i,:] = color_dict[i]
+    return img_out / 255
+
 
 def saveResult(save_path,npyfile,flag_multi_class = False,num_class = 2):
+    imgB = io.imread(os.path.join(save_path, "0.png"), as_gray=True)
     for i,item in enumerate(npyfile):
         img = labelVisualize(num_class,COLOR_DICT,item) if flag_multi_class else item[:,:,0]
-        io.imsave(os.path.join(save_path,"%d_predict.png"%i),img)
+        imgB = cv2.imread(os.path.join(save_path, "%d.png" %i))
+        io.imsave(os.path.join(save_path,"%d_predict.png"
+                                         ""%i),img)
+        imgM = cv2.imread(os.path.join(save_path, "%d_predict.png" % i))
+        overlay = cv2.resize(imgM, (int(512), int(512)))
+        overlay = cv2.applyColorMap(overlay, cv2.COLORMAP_HOT)
+        #np.multiply(overlay, [1.0, 0.0, 0.0], out=overlay, casting='unsafe')
+        added_image = cv2.addWeighted(imgB, 0.5, overlay, 0.5, 0)
+        io.imsave(os.path.join(save_path, "%d_predict_combined.png"
+                                          ""%i), added_image)
+        
