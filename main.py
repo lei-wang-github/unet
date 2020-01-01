@@ -59,7 +59,7 @@ data_gen_args = dict(rotation_range=0.2,
                     zoom_range=0.05,
                     horizontal_flip=True,
                     fill_mode='nearest')
-myGene = trainGenerator(2,'data/membrane/TrainSolar','image','label',data_gen_args,save_to_dir = 'data/membrane/TrainSolar/save')
+myGene = trainGenerator(2,'data/membrane/TrainSolar','image','label',data_gen_args,save_to_dir = None)
 
 model = unet()
 model_checkpoint = ModelCheckpoint('unet_membrane.hdf5', monitor='loss',verbose=1, save_best_only=True)
