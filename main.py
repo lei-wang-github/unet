@@ -1,10 +1,15 @@
 from __future__ import print_function
+import os
+# os.environ["CUDA_VISIBLE_DEVICES"] = '-1' # works on windows 10 to force it to use CPU
 
 from model import *
 from data import *
 
+RunWithGPU = True
+PerformTraining = True
 import numpy as np
-#os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+if RunWithGPU:
+    os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 from skimage import color
 import cv2
@@ -59,14 +64,16 @@ data_gen_args = dict(rotation_range=0.2,
                     zoom_range=0.05,
                     horizontal_flip=True,
                     fill_mode='nearest')
-myGene = trainGenerator(2,'data/membrane/TrainSolar','image','label',data_gen_args,save_to_dir = None)
 
-model = unet()
-model_checkpoint = ModelCheckpoint('unet_membrane.hdf5', monitor='loss',verbose=1, save_best_only=True)
-model.fit_generator(myGene,steps_per_epoch=300,epochs=8,callbacks=[model_checkpoint])
+if PerformTraining:
+    myGene = trainGenerator(2,'data/Solar/train','image','label',data_gen_args,save_to_dir = None)
+    
+    model = unet()
+    model_checkpoint = ModelCheckpoint('unet_Solar.hdf5', monitor='loss',verbose=1, save_best_only=True)
+    model.fit_generator(myGene,steps_per_epoch=300,epochs=20,callbacks=[model_checkpoint])
+else:
+    model = load_model('unet_Solar.hdf5')
 
-# model = load_model('unet_membrane.hdf5')
-
-testGene = testGenerator("data/membrane/TestSolar")
+testGene = testGenerator("data/Solar/test")
 results = model.predict_generator(testGene,30,verbose=1)
-saveResult("data/membrane/TestSolar",results)
+saveResult("data/Solar/test",results)
