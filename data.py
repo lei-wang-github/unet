@@ -7,6 +7,9 @@ import skimage.io as io
 import skimage.transform as trans
 import cv2
 from skimage import color
+import time
+import tensorflow as tf
+from PIL import Image
 
 Sky = [128,128,128]
 Building = [128,0,0]
@@ -49,7 +52,7 @@ def adjustData(img,mask,flag_multi_class,num_class):
 
 def trainGenerator(batch_size,train_path,image_folder,mask_folder,aug_dict,image_color_mode = "grayscale",
                     mask_color_mode = "grayscale",image_save_prefix  = "image",mask_save_prefix  = "mask",
-                    flag_multi_class = False,num_class = 2,save_to_dir = None,target_size = (256,256),seed = 1):
+                    flag_multi_class = False,num_class = 2,save_to_dir = None,target_size = (512,512),seed = 1):
     '''
     can generate image and mask at the same time
     use the same seed for image_datagen and mask_datagen to ensure the transformation for image and mask is the same
@@ -83,8 +86,7 @@ def trainGenerator(batch_size,train_path,image_folder,mask_folder,aug_dict,image
         yield (img,mask)
 
 
-
-def testGenerator(test_path,num_image = 30,target_size = (256,256),flag_multi_class = False,as_gray = True):
+def testGenerator(test_path,num_image = 30,target_size = (512,512),flag_multi_class = False,as_gray = True):
     for i in range(num_image):
         img = io.imread(os.path.join(test_path,"%d.png"%i),as_gray = as_gray)
         img = img / 255
@@ -92,6 +94,42 @@ def testGenerator(test_path,num_image = 30,target_size = (256,256),flag_multi_cl
         img = np.reshape(img,img.shape+(1,)) if (not flag_multi_class) else img
         img = np.reshape(img,(1,)+img.shape)
         yield img
+        
+        
+def test_image_prep(image_file_path, target_size=(512, 512), flag_multi_class=False, as_gray=True):
+    img = io.imread(image_file_path, as_gray=as_gray)
+    img = img / 255
+    img = trans.resize(img, target_size)
+    img = np.reshape(img, img.shape + (1,)) if (not flag_multi_class) else img
+    img = np.reshape(img, (1,) + img.shape)
+    return img
+
+
+def load_model_lite_single_predict(model_path, tf_image):
+    # Load TFLite model and allocate tensors.
+    interpreter = tf.lite.Interpreter(model_path)
+    interpreter.allocate_tensors()
+    
+    # Get input and output tensors.
+    input_details = interpreter.get_input_details()
+    output_details = interpreter.get_output_details()
+    
+    # Test model on random input data.
+    input_shape = input_details[0]['shape']
+    input_data = np.array(tf_image, dtype=np.float32)
+    interpreter.set_tensor(input_details[0]['index'], input_data)
+    t1 = time.time()
+    interpreter.invoke()
+    print("elapsed-time =", time.time() - t1)
+    
+    # The function `get_tensor()` returns a copy of the tensor data.
+    # Use `tensor()` in order to get a pointer to the tensor.
+    outputs = interpreter.get_tensor(output_details[0]['index'])
+    
+    output = outputs[0]
+    img = output[:,:,0]
+    io.imsave('solar.png', img)
+    return img
 
 
 def geneTrainNpy(image_path,mask_path,flag_multi_class = False,num_class = 2,image_prefix = "image",mask_prefix = "mask",image_as_gray = True,mask_as_gray = True):
@@ -132,6 +170,7 @@ def saveResult(save_path,npyfile,flag_multi_class = False,num_class = 2):
     for i,item in enumerate(npyfile):
         img = labelVisualize(num_class,COLOR_DICT,item) if flag_multi_class else item[:,:,0]
         imgB = cv2.imread(os.path.join(save_path, "%d.png" %i))
+        imgB = cv2.resize(imgB, (int(512), int(512)))
         io.imsave(os.path.join(save_path,"%d_predict.png"
                                          ""%i),img)
         imgM = cv2.imread(os.path.join(save_path, "%d_predict.png" % i))
@@ -141,4 +180,3 @@ def saveResult(save_path,npyfile,flag_multi_class = False,num_class = 2):
         added_image = cv2.addWeighted(imgB, 0.5, overlay, 0.5, 0)
         io.imsave(os.path.join(save_path, "%d_predict_combined.png"
                                           ""%i), added_image)
-        

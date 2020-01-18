@@ -5,11 +5,13 @@ import os
 from model import *
 from data import *
 
-RunWithGPU = True
-PerformTraining = True
+RunWithGPU = False
+PerformTraining = False
 import numpy as np
 if RunWithGPU:
     os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+else:
+    os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 
 from skimage import color
 import cv2
@@ -17,6 +19,18 @@ from keras.models import load_model
 
 import tensorflow as tf
 
+gpus = tf.config.experimental.list_physical_devices('GPU')
+if gpus:
+    try:
+    # Currently, memory growth needs to be the same across GPUs
+        for gpu in gpus:
+            tf.config.experimental.set_memory_growth(gpu, True)
+            logical_gpus = tf.config.experimental.list_logical_devices('GPU')
+            print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
+    except RuntimeError as e:
+    # Memory growth must be set before GPUs have been initialized
+        print(e)
+        
 #
 # def prepare(file_path):
 #     img_size = 256  # 50 in txt-based
@@ -58,10 +72,12 @@ overlay = cv2.imread('0_prediction.png')
 # cv2.waitKey(0)
 
 data_gen_args = dict(rotation_range=0.2,
-                    width_shift_range=0.05,
-                    height_shift_range=0.05,
+                    zca_whitening=True,
+                    brightness_range=[0.2,1.8],
+                    width_shift_range=0.10,
+                    height_shift_range=0.10,
                     shear_range=0.05,
-                    zoom_range=0.05,
+                    zoom_range=0.20,
                     horizontal_flip=True,
                     fill_mode='nearest')
 
@@ -70,10 +86,28 @@ if PerformTraining:
     
     model = unet()
     model_checkpoint = ModelCheckpoint('unet_Solar.hdf5', monitor='loss',verbose=1, save_best_only=True)
-    model.fit_generator(myGene,steps_per_epoch=300,epochs=20,callbacks=[model_checkpoint])
+    model.fit_generator(myGene,steps_per_epoch=200,epochs=15,callbacks=[model_checkpoint])
+
+    testGene = testGenerator("data/Solar/test")
+    results = model.predict_generator(testGene, 30, verbose=1)
+    saveResult("data/Solar/test", results)
+
 else:
     model = load_model('unet_Solar.hdf5')
 
-testGene = testGenerator("data/Solar/test")
-results = model.predict_generator(testGene,30,verbose=1)
-saveResult("data/Solar/test",results)
+
+test_single = test_image_prep('./0.png')
+t1 = time.time()
+result = model.predict(test_single)
+print("elapsed-time =", time.time() - t1)
+saveResult("./", result)
+
+
+# tflite_convert --output_file=unet_Solar.tflite --keras_model_file=unet_Solar.hdf5 --input_shapes=1,512,512,1
+# converter = tf.lite.TFLiteConverter.from_saved_model(saved_model_dir)
+# converter.optimizations = [tf.lite.Optimize.OPTIMIZE_FOR_SIZE]
+# tflite_quant_model = converter.convert()
+
+test_single_image = test_image_prep('data/Solar/test/1.png')
+test_lite_img = load_model_lite_single_predict('unet_Solar.tflite', test_single_image)
+
