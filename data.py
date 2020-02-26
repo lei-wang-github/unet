@@ -11,6 +11,9 @@ import time
 import tensorflow as tf
 from PIL import Image
 
+img_height = 512
+img_width = 512
+
 Sky = [128,128,128]
 Building = [128,0,0]
 Pole = [192,192,128]
@@ -52,7 +55,7 @@ def adjustData(img,mask,flag_multi_class,num_class):
 
 def trainGenerator(batch_size,train_path,image_folder,mask_folder,aug_dict,image_color_mode = "grayscale",
                     mask_color_mode = "grayscale",image_save_prefix  = "image",mask_save_prefix  = "mask",
-                    flag_multi_class = False,num_class = 2,save_to_dir = None,target_size = (512,512),seed = 1):
+                    flag_multi_class = False,num_class = 2,save_to_dir = None,target_size = (img_height,img_width),seed = 1):
     '''
     can generate image and mask at the same time
     use the same seed for image_datagen and mask_datagen to ensure the transformation for image and mask is the same
@@ -86,7 +89,7 @@ def trainGenerator(batch_size,train_path,image_folder,mask_folder,aug_dict,image
         yield (img,mask)
 
 
-def testGenerator(test_path,num_image = 30,target_size = (512,512),flag_multi_class = False,as_gray = True):
+def testGenerator(test_path,num_image = 30,target_size = (img_height,img_width),flag_multi_class = False,as_gray = True):
     for i in range(num_image):
         img = io.imread(os.path.join(test_path,"%d.png"%i),as_gray = as_gray)
         img = img / 255
@@ -96,7 +99,7 @@ def testGenerator(test_path,num_image = 30,target_size = (512,512),flag_multi_cl
         yield img
         
         
-def test_image_prep(image_file_path, target_size=(512, 512), flag_multi_class=False, as_gray=True):
+def test_image_prep(image_file_path, target_size=(img_height, img_width), flag_multi_class=False, as_gray=True):
     img = io.imread(image_file_path, as_gray=as_gray)
     img = img / 255
     img = trans.resize(img, target_size)
@@ -128,7 +131,7 @@ def load_model_lite_single_predict(model_path, tf_image):
     
     output = outputs[0]
     img = output[:,:,0]
-    io.imsave('solar.png', img)
+    io.imsave('out.png', img)
     return img
 
 
@@ -170,11 +173,11 @@ def saveResult(save_path,npyfile,flag_multi_class = False,num_class = 2):
     for i,item in enumerate(npyfile):
         img = labelVisualize(num_class,COLOR_DICT,item) if flag_multi_class else item[:,:,0]
         imgB = cv2.imread(os.path.join(save_path, "%d.png" %i))
-        imgB = cv2.resize(imgB, (int(512), int(512)))
+        imgB = cv2.resize(imgB, (int(img_width), int(img_height)))
         io.imsave(os.path.join(save_path,"%d_predict.png"
                                          ""%i),img)
         imgM = cv2.imread(os.path.join(save_path, "%d_predict.png" % i))
-        overlay = cv2.resize(imgM, (int(512), int(512)))
+        overlay = cv2.resize(imgM, (int(img_width), int(img_height)))
         overlay = cv2.applyColorMap(overlay, cv2.COLORMAP_HOT)
         #np.multiply(overlay, [1.0, 0.0, 0.0], out=overlay, casting='unsafe')
         added_image = cv2.addWeighted(imgB, 0.5, overlay, 0.5, 0)
