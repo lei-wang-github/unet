@@ -15,7 +15,7 @@ else:
 
 from skimage import color
 import cv2
-from keras.models import load_model
+from tensorflow.keras.models import load_model
 
 import tensorflow as tf
 
@@ -53,9 +53,9 @@ if gpus:
 # cv2.imwrite('0_prediction.png', prediction)
 
 # load the image
-background = cv2.imread('0.png')
+# background = cv2.imread('0.png')
 # print("background after read", background.shape)
-overlay = cv2.imread('0_prediction.png')
+# overlay = cv2.imread('0_prediction.png')
 # print("overlay after read", overlay.shape)
 # overlay = cv2.resize(overlay, (int(512),int(512)))
 # print("overlay_new after resize", overlay_new.shape)
@@ -82,20 +82,23 @@ data_gen_args = dict(rotation_range=0.2,
                     fill_mode='nearest')
 
 if PerformTraining:
-    myGene = trainGenerator(2,'data/Solar/train','image','label',data_gen_args,save_to_dir = None)
+    myGene = trainGenerator(2, 'data/Solar/train', 'image', 'label', data_gen_args, save_to_dir=None)
     
     model = unet()
-    model_checkpoint = ModelCheckpoint('unet_Solar.hdf5', monitor='loss',verbose=1, save_best_only=True)
-    model.fit_generator(myGene,steps_per_epoch=200,epochs=15,callbacks=[model_checkpoint])
+    model_checkpoint = ModelCheckpoint('unet_Solar.hdf5', monitor='loss', verbose=1, save_best_only=True)
+    model.fit_generator(myGene, steps_per_epoch=300, epochs=250, callbacks=[model_checkpoint])
 
-    testGene = testGenerator("data/Solar/test")
-    results = model.predict_generator(testGene, 30, verbose=1)
-    saveResult("data/Solar/test", results)
+
 
 else:
-    model = load_model('unet_Solar.hdf5')
+    model = load_model('./unet_Solar.hdf5')
+    
+    if True:
+        testGene = testGenerator("data/Solar/test")
+        results = model.predict_generator(testGene, 30, verbose=1)
+        saveResult("data/Solar/test", results)
 
-
+# predict with normal tensorflow model.predict
 test_single = test_image_prep('./0.png')
 t1 = time.time()
 result = model.predict(test_single)
@@ -103,11 +106,13 @@ print("elapsed-time =", time.time() - t1)
 saveResult("./", result)
 
 
-# tflite_convert --output_file=unet_Solar.tflite --keras_model_file=unet_Solar.hdf5 --input_shapes=1,512,512,1
+# tflite_convert --output_file=unet_gscpLaser.tflite --keras_model_file=unet_gscpLaser.hdf5 --input_shapes=1 288,448,1
 # converter = tf.lite.TFLiteConverter.from_saved_model(saved_model_dir)
 # converter.optimizations = [tf.lite.Optimize.OPTIMIZE_FOR_SIZE]
 # tflite_quant_model = converter.convert()
 
-test_single_image = test_image_prep('data/Solar/test/1.png')
-test_lite_img = load_model_lite_single_predict('unet_Solar.tflite', test_single_image)
+if False:
+    test_single_image = test_image_prep('0.png')
+    test_lite_img = load_model_lite_single_predict('unet_gscpLaser228x448-rd32.tflite', test_single_image)
+    
 
