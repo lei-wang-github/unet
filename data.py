@@ -11,8 +11,8 @@ import time
 import tensorflow as tf
 from PIL import Image
 
-img_height = 512
-img_width = 512
+img_height = 256
+img_width = 256
 
 Sky = [128,128,128]
 Building = [128,0,0]
@@ -108,9 +108,9 @@ def test_image_prep(image_file_path, target_size=(img_height, img_width), flag_m
     return img
 
 
-def load_model_lite_single_predict(model_path, tf_image):
+def load_model_lite_single_predict(interpreter, tf_image):
     # Load TFLite model and allocate tensors.
-    interpreter = tf.lite.Interpreter(model_path)
+    # interpreter = tf.lite.Interpreter(model_path)
     interpreter.allocate_tensors()
     
     # Get input and output tensors.

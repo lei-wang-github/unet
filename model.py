@@ -63,11 +63,11 @@ from keras import backend as keras
 #
 #     return model
 
-img_height = 512
-img_width = 512
+img_height = 256
+img_width = 256
 
 def unet(pretrained_weights=None, input_size=(img_height, img_width, 1)):
-    reduction_ratio = 32
+    reduction_ratio = 16
     inputs = Input(input_size)
     conv1 = Conv2D(int(64/reduction_ratio), 3, activation='relu', padding='same', kernel_initializer='he_normal')(inputs)
     conv1 = Conv2D(int(64/reduction_ratio), 3, activation='relu', padding='same', kernel_initializer='he_normal')(conv1)
@@ -115,6 +115,7 @@ def unet(pretrained_weights=None, input_size=(img_height, img_width, 1)):
 
     model = Model(input=inputs, output=conv10)
 
+    # model.compile(optimizer=Adam(lr=1e-4), loss='binary_crossentropy', metrics=['accuracy'])
     model.compile(optimizer=Adam(lr=1e-4), loss='binary_crossentropy', metrics=['accuracy'])
 
     model.summary()
