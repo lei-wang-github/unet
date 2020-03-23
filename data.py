@@ -10,9 +10,12 @@ from skimage import color
 import time
 import tensorflow as tf
 from PIL import Image
+import configparser
 
-img_height = 256
-img_width = 256
+config = configparser.ConfigParser()
+config.read('configuration.txt')
+img_height = int(config['data attributes']['image_height'])
+img_width = int(config['data attributes']['image_width'])
 
 Sky = [128,128,128]
 Building = [128,0,0]
@@ -124,7 +127,7 @@ def load_model_lite_single_predict(interpreter, tf_image):
     t1 = time.time()
     interpreter.invoke()
     print("elapsed-time =", time.time() - t1)
-    
+  
     # The function `get_tensor()` returns a copy of the tensor data.
     # Use `tensor()` in order to get a pointer to the tensor.
     outputs = interpreter.get_tensor(output_details[0]['index'])
