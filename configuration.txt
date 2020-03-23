@@ -1,0 +1,25 @@
+[data path]
+# data source name choices: gscpLaser, Solar, membrane, Texture
+#replace the dataSourceName with one of the above choices
+dataSourceName = membrane
+
+[model type]
+# model types: unet, unetSmall, unet_sepconv #see model definition in model.py
+modelType = unetSmall
+# available reduction ratios are: 1, 16, 32, 64 the bigger the number, the smaller is the model with less weights
+modelReductionRatio = 16
+
+[execution mode]
+PerformTraining = True
+RunWithGPU = True
+
+[data attributes]
+# image dimension must be multiply of 16, input images will be resized to following dimension for train and run
+image_height = 256
+image_width = 256
+
+[training settings]
+# note: number of epochs set the max iterations, training may stop early if no improvement more than # of EarlyStopPatience epochs
+N_epochs = 400
+steps_per_epoch = 300
+EarlyStopPatience = 10
