@@ -16,6 +16,7 @@ config = configparser.ConfigParser()
 config.read('configuration.txt')
 img_height = int(config['data attributes']['image_height'])
 img_width = int(config['data attributes']['image_width'])
+imageFileExtension = config['data attributes']['imageExt']
 
 Sky = [128,128,128]
 Building = [128,0,0]
@@ -94,7 +95,7 @@ def trainGenerator(batch_size,train_path,image_folder,mask_folder,aug_dict,image
 
 def testGenerator(test_path,num_image = 30,target_size = (img_height,img_width),flag_multi_class = False,as_gray = True):
     for i in range(num_image):
-        img = io.imread(os.path.join(test_path,"%d.png"%i),as_gray = as_gray)
+        img = io.imread(os.path.join(test_path,"%d"%i + imageFileExtension),as_gray = as_gray)
         img = img / 255
         img = trans.resize(img,target_size)
         img = np.reshape(img,img.shape+(1,)) if (not flag_multi_class) else img
@@ -126,7 +127,7 @@ def load_model_lite_single_predict(interpreter, tf_image):
     interpreter.set_tensor(input_details[0]['index'], input_data)
     t1 = time.time()
     interpreter.invoke()
-    print("elapsed-time =", time.time() - t1)
+    print("TFLITE ouput: out" + imageFileExtension + " elapsed-time =", time.time() - t1)
   
     # The function `get_tensor()` returns a copy of the tensor data.
     # Use `tensor()` in order to get a pointer to the tensor.
@@ -134,12 +135,12 @@ def load_model_lite_single_predict(interpreter, tf_image):
     
     output = outputs[0]
     img = output[:,:,0]
-    io.imsave('out.png', img)
+    io.imsave('out' + imageFileExtension, img)
     return img
 
 
 def geneTrainNpy(image_path,mask_path,flag_multi_class = False,num_class = 2,image_prefix = "image",mask_prefix = "mask",image_as_gray = True,mask_as_gray = True):
-    image_name_arr = glob.glob(os.path.join(image_path,"%s*.png"%image_prefix))
+    image_name_arr = glob.glob(os.path.join(image_path,"%s*"%image_prefix + imageFileExtension))
     image_arr = []
     mask_arr = []
     for index,item in enumerate(image_name_arr):
@@ -172,17 +173,15 @@ def labelVisualize1(num_class, img, color_dict = COLOR_DICT):
 
 
 def saveResult(save_path,npyfile,flag_multi_class = False,num_class = 2):
-    imgB = io.imread(os.path.join(save_path, "0.png"), as_gray=True)
+    imgB = io.imread(os.path.join(save_path, "0" + imageFileExtension), as_gray=True)
     for i,item in enumerate(npyfile):
         img = labelVisualize(num_class,COLOR_DICT,item) if flag_multi_class else item[:,:,0]
-        imgB = cv2.imread(os.path.join(save_path, "%d.png" %i))
+        imgB = cv2.imread(os.path.join(save_path, "%d"%i + imageFileExtension))
         imgB = cv2.resize(imgB, (int(img_width), int(img_height)))
-        io.imsave(os.path.join(save_path,"%d_predict.png"
-                                         ""%i),img)
-        imgM = cv2.imread(os.path.join(save_path, "%d_predict.png" % i))
+        io.imsave(os.path.join(save_path,"%d_predict"%i + imageFileExtension),img)
+        imgM = cv2.imread(os.path.join(save_path, "%d_predict"%i + imageFileExtension))
         overlay = cv2.resize(imgM, (int(img_width), int(img_height)))
         overlay = cv2.applyColorMap(overlay, cv2.COLORMAP_HOT)
         #np.multiply(overlay, [1.0, 0.0, 0.0], out=overlay, casting='unsafe')
         added_image = cv2.addWeighted(imgB, 0.5, overlay, 0.5, 0)
-        io.imsave(os.path.join(save_path, "%d_predict_combined.png"
-                                          ""%i), added_image)
+        io.imsave(os.path.join(save_path, "%d_predict_combined"%i + imageFileExtension), added_image)

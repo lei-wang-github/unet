@@ -1,7 +1,9 @@
 [data path]
-# data source name choices: gscpLaser, Solar, membrane, Texture
+# data source name choices: gscpLaser, Solar, membrane, Texture...User can add more under the folder named data
 #replace the dataSourceName with one of the above choices
-dataSourceName = membrane
+dataSourceName = gscpLaser
+# number of test images in the test folder (they must be numbered starting from 0.bmp, 1.bmp...10.bmp...
+numberOfTestImages = 23
 
 [model type]
 # model types: unet, unetSmall, unet_sepconv #see model definition in model.py
@@ -10,16 +12,21 @@ modelType = unetSmall
 modelReductionRatio = 16
 
 [execution mode]
+# When set to true, network training will take place, when false, only perform network prediction
 PerformTraining = True
+# for network training, need to make the GPU setting to True. CPU mode will be slow for training, but good enough for prediction.
 RunWithGPU = True
 
 [data attributes]
 # image dimension must be multiply of 16, input images will be resized to following dimension for train and run
-image_height = 256
-image_width = 256
+image_height = 512
+image_width = 512
+# .png or .bmp file format
+imageExt = .bmp
 
 [training settings]
-# note: number of epochs set the max iterations, training may stop early if no improvement more than # of EarlyStopPatience epochs
+# note: number of epochs set the max iterations, training may stop early if no improvement more than # of epochs determined by EarlyStopPatience
+# the train time can take up to a few hours.
 N_epochs = 400
 steps_per_epoch = 300
 EarlyStopPatience = 10

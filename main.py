@@ -45,6 +45,7 @@ data_gen_args = dict(rotation_range=0.2,
                     horizontal_flip=True,
                     fill_mode='nearest')
 
+imageFileExtension = config['data attributes']['imageExt']
 train_path = "data/" + config['data path']['dataSourceName'] + "/train"
 test_path = "data/" + config['data path']['dataSourceName'] + "/test"
 modelSaveName = config['model type']['modelType'] + \
@@ -71,7 +72,6 @@ if PerformTraining:
                         epochs=int(config['training settings']['N_epochs']),
                         callbacks=[model_checkpoint, EarlyStopping])
 
-
 model = load_model(modelSaveName)
 
 # test all the images in the test folder
@@ -80,14 +80,14 @@ results = model.predict_generator(testGene, 23, verbose=1)
 saveResult(test_path, results)
 
 # predict a single image with normal tensorflow model.predict
-testImageFile = test_path + "/22.png"
+testImageFile = test_path + "/" + "22" + imageFileExtension
 test_single = test_image_prep(testImageFile)
 t1 = time.time()
 result = model.predict(test_single)
 print("Tensorflow model predict elapsed-time =", time.time() - t1)
 saveResult("./", result)
 
-# predict a single image with tensorflow lite
+# predict a single image with tensorflow lite. The elapsed time report on PC CPU mode typically will be 7-8 times faster than on Wiper.
 converter = tf.lite.TFLiteConverter.from_keras_model(model)
 converter.optimizations = [tf.lite.Optimize.OPTIMIZE_FOR_SIZE]
 tflite_quant_model = converter.convert()
