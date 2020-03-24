@@ -1,14 +1,42 @@
+# Project
+# unet
+#   |-------->data
+#               |----------gscpLaser
+#               |                |--------->test
+#               |                |--------->train
+#               |                             |-------->image
+#               |                             |-------->label
+#               |----------membrane
+#               |                |--------->test
+#               |                |--------->train
+#               |                             |-------->image
+#               |                             |-------->label
+#               |----------Solar
+#               |                |--------->test
+#               |                |--------->train
+#               |                             |-------->image
+#               |                             |-------->label
+#               |----------Texture
+#               |                |--------->test
+#               |                |--------->train
+#               |                             |-------->image
+#               |                             |-------->label
+#    |-------->main.py
+#    |-------->model.py
+#    |-------->data.py
+#    |-------->configuration.txt
+
 [data path]
 # data source name choices: gscpLaser, Solar, membrane, Texture...User can add more under the folder named data
 #replace the dataSourceName with one of the above choices
-dataSourceName = gscpLaser
+dataSourceName = membrane
 # number of test images in the test folder (they must be numbered starting from 0.bmp, 1.bmp...10.bmp...
 numberOfTestImages = 23
 
 [model type]
 # model types: unet, unetSmall, unet_sepconv #see model definition in model.py
-modelType = unetSmall
-# available reduction ratios are: 1, 16, 32, 64 the bigger the number, the smaller is the model with less weights
+modelType = unet
+# available reduction ratios are: 1, 8, 16, 32, 64 the bigger the number, the smaller is the model with less weights
 modelReductionRatio = 16
 
 [execution mode]
@@ -19,14 +47,14 @@ RunWithGPU = True
 
 [data attributes]
 # image dimension must be multiply of 16, input images will be resized to following dimension for train and run
-image_height = 512
-image_width = 512
+image_height = 256
+image_width = 256
 # .png or .bmp file format
-imageExt = .bmp
+imageExt = .png
 
 [training settings]
-# note: number of epochs set the max iterations, training may stop early if no improvement more than # of epochs determined by EarlyStopPatience
+# note: number of epochs N_epochs sets the max iterations, training may stop early if NO improvement more than # of epochs determined by EarlyStopPatience
 # the train time can take up to a few hours.
-N_epochs = 400
+N_epochs = 500
 steps_per_epoch = 300
-EarlyStopPatience = 10
+EarlyStopPatience = 20
