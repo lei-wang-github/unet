@@ -55,15 +55,15 @@ modelSaveName = config['model type']['modelType'] + \
                 "x" + \
                 config['data attributes']['image_width'] + \
                 "-rd" + \
-                config['model type']['modelReductionRatio'] + \
-                ".hdf5"
+                config['model type']['modelReductionRatio']
+modelSaveNameExt = ".hdf5"
 
 if PerformTraining:
     myGene = trainGenerator(2, train_path, 'image', 'label', data_gen_args, save_to_dir=None)
     
     modelFunctionName = config['model type']['modelType'] + "()"
     model = eval(modelFunctionName)
-    model_checkpoint = tf.keras.callbacks.ModelCheckpoint(modelSaveName, monitor='loss', verbose=1, save_best_only=True)
+    model_checkpoint = tf.keras.callbacks.ModelCheckpoint(modelSaveName + modelSaveNameExt, monitor='loss', verbose=1, save_best_only=True)
     ReduceLROnPlateau = tf.keras.callbacks.ReduceLROnPlateau(monitor='loss', factor=0.1, patience=3, min_delta=0.00001)
     EarlyStopping = tf.keras.callbacks.EarlyStopping(monitor='loss', min_delta=0, patience=int(config["training settings"]["EarlyStopPatience"]))
     # tboard = tf.keras.callbacks.TensorBoard(log_dir='logs')
@@ -73,7 +73,7 @@ if PerformTraining:
                         epochs=int(config['training settings']['N_epochs']),
                         callbacks=[model_checkpoint, EarlyStopping])
 
-model = load_model(modelSaveName)
+model = load_model(modelSaveName + modelSaveNameExt)
 
 # test all the images in the test folder
 testGene = testGenerator(test_path)
@@ -92,6 +92,8 @@ saveResult("./", result)
 converter = tf.lite.TFLiteConverter.from_keras_model(model)
 converter.optimizations = [tf.lite.Optimize.OPTIMIZE_FOR_SIZE]
 tflite_quant_model = converter.convert()
+open(modelSaveName + ".tflite", "wb").write(tflite_quant_model)
+print("Tensor lite model saved at " + modelSaveName + ".tflite")
 interpreter = tf.lite.Interpreter(model_content=tflite_quant_model)
 
 test_single_image = test_image_prep(testImageFile)
