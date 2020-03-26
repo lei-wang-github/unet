@@ -29,28 +29,28 @@
 [data path]
 # data source name choices: gscpLaser, Solar, membrane, Texture...User can add more under the folder named data
 #replace the dataSourceName with one of the above choices
-dataSourceName = membrane
+dataSourceName = gscpNewData
 # number of test images in the test folder (they must be numbered starting from 0.bmp, 1.bmp...10.bmp...
-numberOfTestImages = 23
+numberOfTestImages = 12
 
 [model type]
 # model types: unet, unetSmall, unet_sepconv #see model definition in model.py
-modelType = unet
+modelType = unetSmall
 # available reduction ratios are: 1, 8, 16, 32, 64 the bigger the number, the smaller is the model with less weights
-modelReductionRatio = 16
+modelReductionRatio = 8
 
 [execution mode]
-# When set to true, network training will take place, when false, only perform network prediction
+# When set to true, network training will take place, when false, only perform network prediction. Value must be eith True or False
 PerformTraining = True
 # for network training, need to make the GPU setting to True. CPU mode will be slow for training, but good enough for prediction.
 RunWithGPU = True
 
 [data attributes]
 # image dimension must be multiply of 16, input images will be resized to following dimension for train and run
-image_height = 256
-image_width = 256
+image_height = 48
+image_width = 224
 # .png or .bmp file format
-imageExt = .png
+imageExt = .bmp
 
 [training settings]
 # note: number of epochs N_epochs sets the max iterations, training may stop early if NO improvement more than # of epochs determined by EarlyStopPatience
@@ -58,3 +58,4 @@ imageExt = .png
 N_epochs = 500
 steps_per_epoch = 300
 EarlyStopPatience = 20
+learningRate = 0.0001
