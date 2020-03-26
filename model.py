@@ -16,6 +16,7 @@ config.read('configuration.txt')
 img_height = int(config['data attributes']['image_height'])
 img_width = int(config['data attributes']['image_width'])
 model_reduction_ratio = int(config['model type']['modelReductionRatio'])
+learningRate = float(config['training settings']['learningRate'])
 
 def unet_original(pretrained_weights = None,input_size = (img_height,img_width,1)):
     inputs = Input(input_size)
@@ -61,7 +62,7 @@ def unet_original(pretrained_weights = None,input_size = (img_height,img_width,1
 
     model = Model(input = inputs, output = conv10)
 
-    model.compile(optimizer = Adam(lr = 1e-4), loss = 'binary_crossentropy', metrics = ['accuracy'])
+    model.compile(optimizer = Adam(lr = learningRate), loss = 'binary_crossentropy', metrics = ['accuracy'])
 
     model.summary()
 
@@ -121,7 +122,7 @@ def unet(pretrained_weights=None, input_size=(img_height, img_width, 1)):
     model = Model(input=inputs, output=conv10)
 
     # model.compile(optimizer=Adam(lr=1e-4), loss='binary_crossentropy', metrics=['accuracy'])
-    model.compile(optimizer=Adam(lr=1e-4), loss='binary_crossentropy', metrics=['accuracy'])
+    model.compile(optimizer=Adam(lr=learningRate), loss='binary_crossentropy', metrics=['accuracy'])
 
     model.summary()
 
@@ -180,7 +181,7 @@ def unet_sepconv(pretrained_weights=None, input_size=(img_height, img_width, 1))
     model = Model(input=inputs, output=conv10)
 
     # model.compile(optimizer=Adam(lr=1e-4), loss='binary_crossentropy', metrics=['accuracy'])
-    model.compile(optimizer=Adam(lr=1e-4), loss='binary_crossentropy', metrics=['accuracy'])
+    model.compile(optimizer=Adam(lr=learningRate), loss='binary_crossentropy', metrics=['accuracy'])
 
     model.summary()
 
@@ -223,7 +224,7 @@ def unetSmall (n_ch=1,patch_height=img_height,patch_width=img_width):
 
     model = Model(inputs=inputs, outputs=conv7)
 
-    model.compile(optimizer=Adam(lr=1e-4), loss='binary_crossentropy', metrics=['accuracy'])
+    model.compile(optimizer=Adam(lr=learningRate), loss='binary_crossentropy', metrics=['accuracy'])
     
     model.summary()
     
