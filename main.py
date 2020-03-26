@@ -48,6 +48,7 @@ data_gen_args = dict(rotation_range=0.2,
 imageFileExtension = config['data attributes']['imageExt']
 train_path = "data/" + config['data path']['dataSourceName'] + "/train"
 test_path = "data/" + config['data path']['dataSourceName'] + "/test"
+numberOfTestImages = int(config['data path']['numberOfTestImages'])
 modelSaveName = config['model type']['modelType'] + \
                 "_" + config['data path']['dataSourceName'] + \
                 config['data attributes']['image_height'] + \
@@ -63,7 +64,7 @@ if PerformTraining:
     modelFunctionName = config['model type']['modelType'] + "()"
     model = eval(modelFunctionName)
     model_checkpoint = tf.keras.callbacks.ModelCheckpoint(modelSaveName, monitor='loss', verbose=1, save_best_only=True)
-    # ReduceLROnPlateau = tf.keras.callbacks.ReduceLROnPlateau(monitor='loss', factor=0.1, patience=3, min_delta=0.00001)
+    ReduceLROnPlateau = tf.keras.callbacks.ReduceLROnPlateau(monitor='loss', factor=0.1, patience=3, min_delta=0.00001)
     EarlyStopping = tf.keras.callbacks.EarlyStopping(monitor='loss', min_delta=0, patience=int(config["training settings"]["EarlyStopPatience"]))
     # tboard = tf.keras.callbacks.TensorBoard(log_dir='logs')
     
@@ -76,11 +77,11 @@ model = load_model(modelSaveName)
 
 # test all the images in the test folder
 testGene = testGenerator(test_path)
-results = model.predict_generator(testGene, 23, verbose=1)
+results = model.predict_generator(testGene, numberOfTestImages, verbose=1)
 saveResult(test_path, results)
 
 # predict a single image with normal tensorflow model.predict
-testImageFile = test_path + "/" + "22" + imageFileExtension
+testImageFile = test_path + "/" + "0" + imageFileExtension
 test_single = test_image_prep(testImageFile)
 t1 = time.time()
 result = model.predict(test_single)
