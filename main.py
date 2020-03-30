@@ -47,6 +47,7 @@ data_gen_args = dict(rotation_range=0.2,
 
 imageFileExtension = config['data attributes']['imageExt']
 train_path = "data/" + config['data path']['dataSourceName'] + "/train"
+val_path = "data/" + config['data path']['dataSourceName'] + "/valid"
 test_path = "data/" + config['data path']['dataSourceName'] + "/test"
 numberOfTestImages = int(config['data path']['numberOfTestImages'])
 modelSaveName = config['model type']['modelType'] + \
@@ -59,7 +60,8 @@ modelSaveName = config['model type']['modelType'] + \
 modelSaveNameExt = ".hdf5"
 
 if PerformTraining:
-    myGene = trainGenerator(2, train_path, 'image', 'label', data_gen_args, save_to_dir=None)
+    trainGen = trainGenerator(2, train_path, 'image', 'label', data_gen_args, save_to_dir=None)
+    valGen = trainGenerator(2, val_path, 'image', 'label', data_gen_args, save_to_dir=None)
     
     modelFunctionName = config['model type']['modelType'] + "()"
     model = eval(modelFunctionName)
@@ -68,7 +70,7 @@ if PerformTraining:
     EarlyStopping = tf.keras.callbacks.EarlyStopping(monitor='loss', min_delta=0, patience=int(config["training settings"]["EarlyStopPatience"]))
     # tboard = tf.keras.callbacks.TensorBoard(log_dir='logs')
     
-    model.fit_generator(myGene,
+    model.fit_generator(trainGen,
                         steps_per_epoch=int(config['training settings']['steps_per_epoch']),
                         epochs=int(config['training settings']['N_epochs']),
                         callbacks=[model_checkpoint, EarlyStopping])
