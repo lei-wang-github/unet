@@ -78,12 +78,14 @@ if PerformTraining:
 model = load_model(modelSaveName + modelSaveNameExt)
 
 # test all the images in the test folder
-testGene = testGenerator(test_path)
+testGene = testImageSingleClassGenerator(test_path)
+#testGene = testGenerator(test_path)
 results = model.predict_generator(testGene, numberOfTestImages, verbose=1)
-saveResult(test_path, results)
+#saveResult(test_path, results)
+saveTestResult(test_path, results)
 
 # predict a single image with normal tensorflow model.predict
-testImageFile = test_path + "/" + "0" + imageFileExtension
+testImageFile = test_path + "/" + "test" + "/" + "0" + imageFileExtension
 test_single = test_image_prep(testImageFile)
 t1 = time.time()
 result = model.predict(test_single)

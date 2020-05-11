@@ -85,3 +85,10 @@ Keras is compatible with: Python 2.7-3.5.
 ### Display result image
 
 imagemagick mogrify -resize 512x512 *.png
+
+### More to improve the project:
+
+1. Use Keras flow_from_directory to prepare for predict_generator to replace the existing method, which uses the fixed image naming index 0, 1, 2, ...
+2. Pay attention to the requirement in flow_from_directory, which requires the test folder contains a subfolder
+3. Noticed that the current train_generator function uses batch size 2, is this correct? Because the number of epochs in the model fit generator is 300
+4. Support multi-class semantic segmenation with Unet. Check Tensorflow example at: [Image Segmentation](https://www.tensorflow.org/tutorials/images/segmentation)

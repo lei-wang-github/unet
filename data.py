@@ -1,5 +1,5 @@
 from __future__ import print_function
-from keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
 import numpy as np 
 import os
 import glob
@@ -101,8 +101,25 @@ def testGenerator(test_path,num_image = 30,target_size = (img_height,img_width),
         img = np.reshape(img,img.shape+(1,)) if (not flag_multi_class) else img
         img = np.reshape(img,(1,)+img.shape)
         yield img
-        
-        
+
+def testImageSingleClassGenerator(test_path, batch_size=1, target_size=(img_height, img_width), flag_multi_class=False,
+                  color_mode='grayscale'):
+    test_datagen = ImageDataGenerator(rescale=1. / 255)
+
+    test_generator = test_datagen.flow_from_directory(
+        directory=test_path,
+        classes=['test'],
+        shuffle=False, #alphanumeric order
+        target_size=target_size,
+        batch_size=batch_size,
+        color_mode=color_mode,
+        class_mode=None)
+
+    for im in test_generator:
+        im = im
+        yield im
+
+
 def test_image_prep(image_file_path, target_size=(img_height, img_width), flag_multi_class=False, as_gray=True):
     img = io.imread(image_file_path, as_gray=as_gray)
     img = img / 255
@@ -185,3 +202,30 @@ def saveResult(save_path,npyfile,flag_multi_class = False,num_class = 2):
         #np.multiply(overlay, [1.0, 0.0, 0.0], out=overlay, casting='unsafe')
         added_image = cv2.addWeighted(imgB, 0.5, overlay, 0.5, 0)
         io.imsave(os.path.join(save_path, "%d_predict_combined"%i + imageFileExtension), added_image)
+        
+def saveTestResult(save_path, npyfile):
+    test_datagen = ImageDataGenerator(rescale=1. / 255)
+    test_generator = test_datagen.flow_from_directory(
+        directory=save_path,
+        classes=['test'],
+        shuffle=False, #alphanumeric order
+        target_size=(int(img_width), int(img_height)),
+        batch_size=1,
+        color_mode='grayscale',
+        class_mode=None)
+    for resultImgArray,testImgTensor, filename in zip(npyfile, test_generator, test_generator.filenames):
+        x = testImgTensor
+        y = resultImgArray
+        z = filename
+        z = os.path.splitext(os.path.basename(z))[0]
+        x = tf.squeeze(x, [0]) #4D tensor to 3D array
+        x_PIL = tf.keras.preprocessing.image.array_to_img(x, scale=True) #and scale to [0-255]
+        y_PIL = tf.keras.preprocessing.image.array_to_img(y, scale=True)
+        x_CV2 = cv2.cvtColor(np.array(x_PIL), cv2.COLOR_RGB2BGR)
+        y_CV2 = cv2.cvtColor(np.array(y_PIL), cv2.COLOR_RGB2BGR)
+        x_CV2 = cv2.resize(x_CV2, (int(img_width), int(img_height)))
+        y_CV2 = cv2.resize(y_CV2, (int(img_width), int(img_height)))
+        y_CV2 = cv2.applyColorMap(y_CV2, cv2.COLORMAP_HOT)
+        added_image = cv2.addWeighted(x_CV2, 0.5, y_CV2, 0.5, 0)
+        io.imsave(os.path.join(save_path, z + "_predict_combined_test" + imageFileExtension), added_image)
+
