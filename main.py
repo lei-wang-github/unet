@@ -57,6 +57,7 @@ modelSaveName = config['model type']['modelType'] + \
                 config['data attributes']['image_width'] + \
                 "-rd" + \
                 config['model type']['modelReductionRatio']
+usePretrainedWeights = eval(config['execution mode']['UsePretrainedWeights'])
 modelSaveNameExt = ".hdf5"
 
 if PerformTraining:
@@ -65,6 +66,8 @@ if PerformTraining:
     
     modelFunctionName = config['model type']['modelType'] + "()"
     model = eval(modelFunctionName)
+    if tf.io.gfile.exists(modelSaveName + modelSaveNameExt) and usePretrainedWeights:
+        model.load_weights(modelSaveName + modelSaveNameExt)
     model_checkpoint = tf.keras.callbacks.ModelCheckpoint(modelSaveName + modelSaveNameExt, monitor='loss', verbose=1, save_best_only=True)
     ReduceLROnPlateau = tf.keras.callbacks.ReduceLROnPlateau(monitor='loss', factor=0.1, patience=3, min_delta=0.00001)
     EarlyStopping = tf.keras.callbacks.EarlyStopping(monitor='loss', min_delta=0, patience=int(config["training settings"]["EarlyStopPatience"]))
