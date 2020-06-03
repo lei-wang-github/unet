@@ -3,21 +3,25 @@
 #   |-------->data
 #               |----------gscpLaser
 #               |                |--------->test
+#               |                             |-------->test
 #               |                |--------->train
 #               |                             |-------->image
 #               |                             |-------->label
 #               |----------membrane
 #               |                |--------->test
+#               |                             |-------->test
 #               |                |--------->train
 #               |                             |-------->image
 #               |                             |-------->label
 #               |----------Solar
 #               |                |--------->test
+#               |                             |-------->test
 #               |                |--------->train
 #               |                             |-------->image
 #               |                             |-------->label
 #               |----------Texture
 #               |                |--------->test
+#               |                             |-------->test
 #               |                |--------->train
 #               |                             |-------->image
 #               |                             |-------->label
@@ -29,9 +33,9 @@
 [data path]
 # data source name choices: gscpLaser, Solar, membrane, Texture, sviBM...User can add more under the folder named data
 #replace the dataSourceName with one of the above choices
-dataSourceName = sviBM
+dataSourceName = gscpLaser
 # number of test images in the test folder (they must be numbered starting from 0.bmp, 1.bmp...10.bmp...
-numberOfTestImages = 46
+numberOfTestImages = 24
 
 [model type]
 # model types: unet, unetSmall, unet_sepconv #see model definition in model.py
@@ -43,7 +47,7 @@ modelReductionRatio = 8
 # When set to true, network training will take place, when false, only perform network prediction. Value must be either True or False
 PerformTraining = False
 # for network training, need to make the GPU setting to True. CPU mode will be slow for training, but good enough for prediction.
-RunWithGPU = True
+RunWithGPU = False
 # Whether to use pre-trained weights if PerformTraining is True and pre-trained model exists
 UsePretrainedWeights = True
 
